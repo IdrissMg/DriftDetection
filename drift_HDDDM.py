@@ -10,9 +10,6 @@ import random
 import warnings
 warnings.filterwarnings("ignore")
 
-import os
-os.chdir('C:/Users/imghabba/Desktop/Code')
-
 import sys, os
 
 # Disable
@@ -22,7 +19,6 @@ def blockPrint():
 # Enable
 def enablePrint():
     sys.stdout = sys.__stdout__
-
 
 
 class Distance : 
@@ -135,11 +131,6 @@ class Drift_Detector :
 
             dist_diff = actual_dist - prev_dist
 
-            print('ref_window length is %f' %ref_window.shape[0])
-            print('actual dist is {}'.format(actual_dist))
-            print('previous dist is {}'.format(prev_dist))
-            print('dist diff is {}'.format(dist_diff))
-
             #we update the adaptive threshold
 
             epsilon_hat = sum_eps/(i-lambda_)
@@ -148,17 +139,9 @@ class Drift_Detector :
 
             beta_hat = epsilon_hat + self.gamma * sigma_hat   #One method to compute beta_hat
 
-            print('epsilon hat is {}'.format(epsilon_hat))
-            print('sigma_hat is {}'.format(sigma_hat))
-            print('beta_hat is {}'.format(beta_hat))
-
             if abs(dist_diff) > beta_hat :
 
-                # print('drift detected')
-
                 lambda_ = i 
-                # for feature in self.categorical_variables:
-                #     print(ref_window[feature].value_counts(),current_window[feature].value_counts())
                 change.append([range(self.n_batch*(i) - ref_window.shape[0],self.n_batch*(i)),range(self.n_batch*i,self.n_batch*(i+1))])
                 ref_window = current_window
                 drift = True
@@ -175,9 +158,6 @@ class Drift_Detector :
                 sum_eps += abs(dist_diff)
                 sum_eps_sd += (abs(dist_diff)-epsilon_hat)**2
 
-            print('/')
-            print('/')
-            print('/')
 
         return change
 
@@ -188,8 +168,6 @@ class Drift_Detector :
         n_batch : number of elements per batch.  
          
         """
-
-        # blockPrint()
 
         ref_window = self.data.iloc[0:self.n_batch]
         prev_dist = 0
@@ -207,10 +185,6 @@ class Drift_Detector :
 
             actual_dist = self.windows_distance(ref_window,current_window)
 
-            print('ref_window length is %f' %ref_window.shape[0])
-            print('actual dist is {}'.format(actual_dist))
-
-
             if abs(actual_dist) > self.threshold :
                 print('drift detected')
                 change.append([range(self.n_batch*(i) - ref_window.shape[0],self.n_batch*(i)),range(self.n_batch*i,self.n_batch*(i+1))])
@@ -223,11 +197,6 @@ class Drift_Detector :
                 ref_window = ref_window.append(current_window)
 
             i +=1
-
-
-            print('/')
-            print('/')
-            print('/')
 
         return change
 
@@ -316,9 +285,6 @@ def cross_validation(data,target,n_batch,indexes,clf):
 
 
     for i in range(int(n/n_batch)-1): 
-
-        # train_indexes = indexes[:(i+1)*int(p_test*n)]
-        # test_indexes = indexes[(i+1)*int(p_test*n):(i+2)*int(p_test*n)]
 
         train_indexes = indexes[:(i+1)*int(n_batch)]
         test_indexes = indexes[(i+1)*int(n_batch):(i+2)*int(n_batch)]
@@ -438,18 +404,6 @@ def final_func(data,target,n_batch,n_bins,threshold,to_keep,dummy,categorical_va
 
         result = Detector.drift_detector2()
 
-        print(result)
-
-        # binned_data_1 = process_bin(binned_data,numerical_cols)
-
-        # binned_data_2 = binned_data_1[categorical_variables + numerical_cols]
-
-        # from sklearn import preprocessing
-
-        # tmp = binned_data_1[numerical_cols]
-        # tmp = tmp.apply(preprocessing.LabelEncoder().fit_transform)
-        # binned_data_1[numerical_cols] = tmp
-
         if to_keep == "all": 
             to_keep = list(binned_data)
 
@@ -499,42 +453,6 @@ def final_func(data,target,n_batch,n_bins,threshold,to_keep,dummy,categorical_va
 
             percentage_out_train.extend(result_out[3])
             percentage_out_test.extend(result_out[4])
-
-        # blockPrint()
-        print('/')
-        print('/')
-        print('/')
-
-        print('the percentage_within_train is \n {}'.format(percentage_within_train))
-        print('the percentage_within_test is \n {}'.format(percentage_within_test))
-
-        # print('the precision within the domain is \n {}'.format(precision_within))
-        # print('the recall within the domain is \n {}'.format(recall_within))
-        print('the f1_score within the domain is \n {}'.format(f1_score_within))
-
-        # print('the mean precision within the domain is {}'.format(np.mean(precision_within)))
-        # print('the mean recall within the domain is {}'.format(np.mean(recall_within)))
-        print('the mean f1_score within the domain is {}'.format(np.mean(f1_score_within)))
-
-        print('/')
-        print('/')
-        print('/')
-
-        print('the percentage_out_train is \n {}'.format(percentage_out_train))
-        print('the percentage_out_test is \n {}'.format(percentage_out_test))
-
-        # print('the precision out of the domain is \n {}'.format(precision_out))
-        # print('the recall out of the domain is \n {}'.format(recall_out))
-        print('the f1_score out of the domain is \n {}'.format(f1_score_out))
-
-        # print('the mean precision out of the domain is {}'.format(np.mean(precision_out)))
-        # print('the mean recall out of the domain is {}'.format(np.mean(recall_out)))
-        print('the mean f1_score out of the domain is {}'.format(np.mean(f1_score_out)))
-
-        print('/')
-        print('/')
-        print('/')
-
         
         t_test = stats.ttest_ind(f1_score_within,f1_score_out)
         enablePrint()
@@ -542,33 +460,16 @@ def final_func(data,target,n_batch,n_bins,threshold,to_keep,dummy,categorical_va
         #We will check for normality of data
 
         normal_test_in = stats.normaltest(f1_score_within,nan_policy = 'omit')
-        print(n_batch, n_bins, normal_test_in)
 
         normal_test_out = stats.normaltest(f1_score_out,nan_policy = 'omit')
-        print(n_batch, n_bins, normal_test_out)
 
         if normal_test_in[1] > 0.05 and normal_test_out[1] > 0.05:
             t_test = stats.ttest_ind(f1_score_within,f1_score_out)
-            print(t_test)
 
         else:
             tmp_in = stats.boxcox(f1_score_within)[0]
             tmp_out = stats.boxcox(f1_score_out)[0]
             t_test = stats.ttest_ind(tmp_in,tmp_out)
-            print(t_test)
-
-
-        # res_box = stats.normaltest(tmp,nan_policy = 'omit')
-
-        # print('normality test after boxcox for within f1_score for the combination {},{} is {}'.format(n_batch,n_bins,res_box))
-
-        # tmp = stats.boxcox(f1_score_out)
-
-        # res_box = stats.normaltest(tmp,nan_policy = 'omit')
-
-        # print('normality test after boxcox for out f1_score for the combination {},{} is {}'.format(n_batch,n_bins,res_box))
-
-        print('loop done')
 
         return to_keep,n_batch,threshold,n_bins,round(np.mean(f1_score_within),2),round(np.mean(f1_score_out),2),round(np.mean(percentage_within_train),2),round(np.mean(percentage_within_test),2),\
                 round(np.mean(percentage_out_train),2),round(np.mean(percentage_out_test),2)
@@ -581,16 +482,6 @@ def process_features(data):
     return data
 
 
-# print('the precision_out_total is \n {}'.format(precision_out_total))
-# print('the recall_out_total is \n {}'.format(recall_out_total))
-
-# print('the precision_within_total is \n {}'.format(precision_within_total))
-# print('the recall_within_total is \n {}'.format(recall_within_total))
-
-# print('the precision_within_out_total is \n {}'.format(precision_within_out_total))
-# print('the recall_within_out_total is \n {}'.format(recall_within_out_total))
-
-# print('the results list is \n {}'.format(results))
 
 def write_lines(file,liste_elem):
     for elem in liste_elem:
@@ -613,8 +504,6 @@ def main():
         list_threshold = [0.2]
 
         list_quantile = [10]    #100/q % of the data in each quantile
-
-        # data = pd.read_csv('Datasets/options_natixis.csv',sep = ';',encoding = "cp1252",low_memory = False,na_values = "null")
         data = pd.read_csv('Datasets/options_ing.csv')
 
         data = data.fillna(-1,axis=1)
@@ -660,15 +549,6 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-
-
-
-
-# dic={}
-# for feature in categorical_variables+numerical_cols:
-#     dic.update({feature:len(binned_data[feature].unique())})
-# print(dic)
 
 
 
